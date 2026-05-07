@@ -15,7 +15,7 @@ and decrypts by multiplying by `f` on the left.
 
 The crate includes pure Rust group algebra arithmetic and uses the local
 `fft-dihedral` and `fft-symmetric` crates, behind the default `fft` feature, for
-fast multiplication when the field and group are compatible.
+fast multiplication and blockwise inversion when the field and group are compatible.
 
 ## Run
 

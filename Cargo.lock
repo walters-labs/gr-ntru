@@ -35,14 +35,18 @@ dependencies = [
 
 [[package]]
 name = "fft-dihedral"
-version = "0.1.1"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f6763cd7086bc8f67426173cda062042ca6d86bdab0e8cf6da5725244e70520"
 dependencies = [
  "ntt",
 ]
 
 [[package]]
 name = "fft-symmetric"
-version = "0.1.0"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e36ec2057616a55900f33d33c64d957162748af28cfc2b062b9d17cb545ee064"
 
 [[package]]
 name = "heck"

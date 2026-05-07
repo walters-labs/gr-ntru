@@ -11,8 +11,8 @@ default = ["fft"]
 fft = ["dep:fft-dihedral", "dep:fft-symmetric"]
 
 [dependencies]
-fft-dihedral = { path = "../fft-dihedral", version = "0.1.1", optional = true }
-fft-symmetric = { path = "../fft-symmetric", version = "0.1.0", optional = true }
+fft-dihedral = { version = "0.2.0", optional = true }
+fft-symmetric = { version = "0.2.0", optional = true }
 
 [lib]
 name = "ntru_group_algebra"

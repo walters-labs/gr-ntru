@@ -423,6 +423,10 @@ impl GroupAlgebraNtru {
             return Err(NtruError::Shape);
         }
 
+        if let Some(inverse) = self.try_fft_inverse(element, modulus)? {
+            return Ok(inverse);
+        }
+
         match self.group.kind() {
             GroupKind::Cyclic => {
                 let inverse = cyclic_inverse_mod(element, modulus)?;
@@ -632,6 +636,18 @@ impl GroupAlgebraNtru {
         }
     }
 
+    fn try_fft_inverse(
+        &mut self,
+        element: &[u64],
+        modulus: u64,
+    ) -> Result<Option<Vec<u64>>, NtruError> {
+        match self.group.kind() {
+            GroupKind::Dihedral => self.try_dihedral_fft_inverse(element, modulus),
+            GroupKind::Symmetric => self.try_symmetric_fft_inverse(element, modulus),
+            GroupKind::Cyclic => Ok(None),
+        }
+    }
+
     #[cfg(feature = "fft")]
     fn try_dihedral_fft_multiply(
         &mut self,
@@ -680,6 +696,47 @@ impl GroupAlgebraNtru {
     }
 
     #[cfg(feature = "fft")]
+    fn try_dihedral_fft_inverse(
+        &mut self,
+        element: &[u64],
+        modulus: u64,
+    ) -> Result<Option<Vec<u64>>, NtruError> {
+        if self.group.n() < 3
+            || !self.group.n().is_power_of_two()
+            || gcd(2 * self.group.n() as u64, modulus) != 1
+        {
+            return Ok(None);
+        }
+        if is_prime(modulus) && !(modulus - 1).is_multiple_of(self.group.n() as u64) {
+            return Ok(None);
+        }
+        let omega = match fft_dihedral::root_of_unity(self.group.n(), modulus) {
+            Ok(root) => root,
+            Err(_) => return Ok(None),
+        };
+        let n = self.group.n();
+        match fft_dihedral::dihedral_invert_fft(&element[..n], &element[n..], modulus, omega) {
+            Ok((rotations, reflections)) => {
+                let inverse: Vec<_> = rotations.into_iter().chain(reflections).collect();
+                self.stats.record("fft-dihedral:invert");
+                self.verify_inverse(element, &inverse, modulus)?;
+                Ok(Some(inverse))
+            }
+            Err(_) if is_prime(modulus) => Err(NtruError::NotInvertible),
+            Err(_) => Ok(None),
+        }
+    }
+
+    #[cfg(not(feature = "fft"))]
+    fn try_dihedral_fft_inverse(
+        &mut self,
+        _element: &[u64],
+        _modulus: u64,
+    ) -> Result<Option<Vec<u64>>, NtruError> {
+        Ok(None)
+    }
+
+    #[cfg(feature = "fft")]
     fn try_symmetric_fft_multiply(
         &mut self,
         lhs: &[u64],
@@ -707,6 +764,38 @@ impl GroupAlgebraNtru {
         &mut self,
         _lhs: &[u64],
         _rhs: &[u64],
+        _modulus: u64,
+    ) -> Result<Option<Vec<u64>>, NtruError> {
+        Ok(None)
+    }
+
+    #[cfg(feature = "fft")]
+    fn try_symmetric_fft_inverse(
+        &mut self,
+        element: &[u64],
+        modulus: u64,
+    ) -> Result<Option<Vec<u64>>, NtruError> {
+        if !is_prime(modulus) || modulus <= self.group.n() as u64 {
+            return Ok(None);
+        }
+        let plan = match fft_symmetric::SymmetricFft::new(self.group.n(), modulus) {
+            Ok(plan) => plan,
+            Err(_) => return Ok(None),
+        };
+        match plan.invert(element) {
+            Ok(inverse) => {
+                self.stats.record("fft-symmetric:invert");
+                self.verify_inverse(element, &inverse, modulus)?;
+                Ok(Some(inverse))
+            }
+            Err(_) => Err(NtruError::NotInvertible),
+        }
+    }
+
+    #[cfg(not(feature = "fft"))]
+    fn try_symmetric_fft_inverse(
+        &mut self,
+        _element: &[u64],
         _modulus: u64,
     ) -> Result<Option<Vec<u64>>, NtruError> {
         Ok(None)
@@ -1195,6 +1284,44 @@ mod tests {
             }
         }
         panic!("could not find an invertible sample");
+    }
+
+    #[cfg(feature = "fft")]
+    #[test]
+    fn dihedral_fft_inverse_backend_is_used_when_compatible() {
+        let group = FiniteGroup::dihedral(8).unwrap();
+        let mut scheme = GroupAlgebraNtru::new(group, 3, 97, 2).unwrap();
+        let mut element = vec![0; scheme.group().order()];
+        element[0] = 5;
+
+        let inverse = scheme.inverse_mod(&element, 97).unwrap();
+        assert_eq!(
+            scheme.multiply_mod(&element, &inverse, 97).unwrap(),
+            scheme.one_mod(97)
+        );
+        assert!(scheme
+            .backend_stats()
+            .counts()
+            .contains_key("fft-dihedral:invert"));
+    }
+
+    #[cfg(feature = "fft")]
+    #[test]
+    fn symmetric_fft_inverse_backend_is_used_when_compatible() {
+        let group = FiniteGroup::symmetric(3).unwrap();
+        let mut scheme = GroupAlgebraNtru::new(group, 5, 67, 2).unwrap();
+        let mut element = vec![0; scheme.group().order()];
+        element[0] = 2;
+
+        let inverse = scheme.inverse_mod(&element, 5).unwrap();
+        assert_eq!(
+            scheme.multiply_mod(&element, &inverse, 5).unwrap(),
+            scheme.one_mod(5)
+        );
+        assert!(scheme
+            .backend_stats()
+            .counts()
+            .contains_key("fft-symmetric:invert"));
     }
 
     #[test]
