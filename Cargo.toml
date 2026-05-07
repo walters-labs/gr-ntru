@@ -1,6 +1,23 @@
 [package]
-name = "NTRU-group-algebra"
+name = "ntru-group-algebra"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+description = "NTRU-style experiments over finite group algebras"
+license = "MIT"
+repository = "https://github.com/walters-labs/ntru-group-algebra"
+
+[features]
+default = ["fft"]
+fft = ["dep:fft-dihedral", "dep:fft-symmetric"]
 
 [dependencies]
+fft-dihedral = { path = "../fft-dihedral", version = "0.1.1", optional = true }
+fft-symmetric = { path = "../fft-symmetric", version = "0.1.0", optional = true }
+
+[lib]
+name = "ntru_group_algebra"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ntru-group-algebra"
+path = "src/main.rs"
