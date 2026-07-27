@@ -1,10 +1,15 @@
 [package]
-name = "ntru-group-algebra"
+name = "gr-ntru"
 version = "0.1.0"
 edition = "2021"
-description = "NTRU-style experiments over finite group algebras"
+description = "Group ring NTRU experiments over cyclic, dihedral, and symmetric groups"
 license = "MIT"
-repository = "https://github.com/walters-labs/ntru-group-algebra"
+repository = "https://github.com/walters-labs/gr-ntru"
+homepage = "https://github.com/walters-labs/gr-ntru"
+documentation = "https://docs.rs/gr-ntru"
+readme = "README.md"
+keywords = ["cryptography", "ntru", "group-rings", "fft", "post-quantum"]
+categories = ["cryptography", "mathematics", "algorithms"]
 
 [features]
 default = ["fft"]
@@ -15,9 +20,9 @@ fft-dihedral = { version = "0.2.0", optional = true }
 fft-symmetric = { version = "0.2.0", optional = true }
 
 [lib]
-name = "ntru_group_algebra"
+name = "gr_ntru"
 path = "src/lib.rs"
 
 [[bin]]
-name = "ntru-group-algebra"
+name = "gr-ntru"
 path = "src/main.rs"

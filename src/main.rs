@@ -1,7 +1,7 @@
 use std::env;
 use std::time::Instant;
 
-use ntru_group_algebra::{FiniteGroup, GroupAlgebraNtru, NtruError, TrialSummary};
+use gr_ntru::{FiniteGroup, GroupAlgebraNtru, NtruError, TrialSummary};
 
 #[derive(Clone, Debug)]
 struct Experiment {
@@ -105,7 +105,7 @@ fn main() -> Result<(), NtruError> {
 }
 
 fn print_help() {
-    println!("ntru-group-algebra --profile quick|fft [--seed N]");
+    println!("gr-ntru --profile quick|fft [--seed N]");
 }
 
 fn run_experiment(experiment: &Experiment, seed: u64) -> Result<TrialSummary, NtruError> {

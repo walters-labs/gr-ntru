@@ -49,18 +49,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e36ec2057616a55900f33d33c64d957162748af28cfc2b062b9d17cb545ee064"
 
 [[package]]
-name = "heck"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
-
-[[package]]
-name = "ntru-group-algebra"
+name = "gr-ntru"
 version = "0.1.0"
 dependencies = [
  "fft-dihedral",
  "fft-symmetric",
 ]
+
+[[package]]
+name = "heck"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
 name = "ntt"
