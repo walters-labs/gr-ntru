@@ -1,4 +1,4 @@
-# GR-NTRU: Symmetric Group
+# GR-NTRU
 
 Rust implementation of NTRU-style experiments over finite group algebras.
 
